@@ -1,0 +1,122 @@
+-- SAFE GUI TEMPLATE (No exploits, no bypasses)
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "MenuGui"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromScale(0.25, 0.3)
+main.Position = UDim2.fromScale(0.375, 0.35)
+main.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- red
+main.BorderSizePixel = 0
+main.Parent = gui
+
+-- Draggable
+local dragging, dragStart, startPos
+main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		main.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0.2, 0)
+title.BackgroundTransparency = 1
+title.Text = "MENU"
+title.TextColor3 = Color3.new(0,0,0)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.Parent = main
+
+-- Slider Background
+local sliderBG = Instance.new("Frame")
+sliderBG.Size = UDim2.new(0.8, 0, 0.1, 0)
+sliderBG.Position = UDim2.new(0.1, 0, 0.4, 0)
+sliderBG.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+sliderBG.BorderSizePixel = 0
+sliderBG.Parent = main
+
+local slider = Instance.new("Frame")
+slider.Size = UDim2.new(0.2, 0, 1, 0)
+slider.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+slider.BorderSizePixel = 0
+slider.Parent = sliderBG
+
+-- Slider Logic (SAFE RANGE)
+local minSpeed = 16
+local maxSpeed = 24
+local draggingSlider = false
+
+slider.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingSlider = true
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingSlider = false
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local x = math.clamp(
+			(input.Position.X - sliderBG.AbsolutePosition.X) / sliderBG.AbsoluteSize.X,
+			0, 1
+		)
+		slider.Size = UDim2.new(x, 0, 1, 0)
+
+		local speed = math.floor(minSpeed + (maxSpeed - minSpeed) * x)
+
+		-- ONLY works in games that ALLOW WalkSpeed changes
+		local char = player.Character
+		if char and char:FindFirstChild("Humanoid") then
+			char.Humanoid.WalkSpeed = speed
+		end
+	end
+end)
+
+-- Auto Pickup Button (LEGIT PLACEHOLDER)
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.8, 0, 0.15, 0)
+button.Position = UDim2.new(0.1, 0, 0.6, 0)
+button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+button.Text = "AUTO INTERACT"
+button.TextColor3 = Color3.new(0,0,0)
+button.Font = Enum.Font.GothamBold
+button.TextScaled = true
+button.Parent = main
+
+button.MouseButton1Click:Connect(function()
+	-- This ONLY works if the game provides a legit RemoteEvent
+	-- Example:
+	-- game.ReplicatedStorage.PickupEvent:FireServer()
+end)
